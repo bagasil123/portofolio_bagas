@@ -1,29 +1,38 @@
-// src/app/page.tsx (VERSI FINAL YANG SUDAH DIPERBAIKI)
-
-// Hapus 'use client' jika tidak ada interaksi client di sini, biarkan sebagai Server Component
-// 'use client'; // <-- HAPUS BARIS INI JIKA ADA
+// src/app/page.tsx (VERSI FINAL DENGAN TYPESCRIPT YANG BENAR)
 
 import { db } from '../../lib/firebase';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import Image from 'next/image';
 import Scene3D from '../../lib/components/Scene3D';
-// Kita akan butuh 'motion' dari framer-motion untuk animasi, tapi kita akan definisikan di komponen client
 
 // =======================================================
-// KITA BUAT KOMPONEN UNTUK MENAMPILKAN KONTEN
-// Komponen ini kita buat 'client component' agar bisa menggunakan animasi
+// 1. DEFINISIKAN TIPE DATA (INTERFACE) DI SINI
 // =======================================================
+interface Profile {
+  name?: string;
+  title?: string;
+  bio?: string;
+  cvUrl?: string;
+}
 
-// Buat file baru: components/PortfolioContent.tsx
-// Lalu pindahkan semua komponen UI ke sana dan tambahkan 'use client' di atasnya.
-// Tapi untuk sekarang, kita buat sederhana dulu.
+interface Skill {
+  id: string;
+  name: string;
+  logoUrl: string;
+}
+
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  projectUrl: string;
+}
 
 // =======================================================
-// KOMPONEN UTAMA HALAMAN (SERVER COMPONENT)
+// 2. GUNAKAN INTERFACE PADA KOMPONEN
 // =======================================================
-
-// Komponen-komponen UI kita definisikan di sini untuk sementara
-function Hero({ profile }: { profile: any }) {
+function Hero({ profile }: { profile: Profile }) {
     return (
         <div className="text-center py-20">
             <h1 className="text-5xl font-bold">{profile.name || 'Nama Anda'}</h1>
@@ -38,12 +47,12 @@ function Hero({ profile }: { profile: any }) {
     )
 }
 
-function Skills({ skills }: { skills: any[] }) {
+function Skills({ skills }: { skills: Skill[] }) {
     return (
         <div className="py-20">
             <h2 className="text-3xl font-bold text-center mb-8">My Skills</h2>
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8 max-w-4xl mx-auto">
-                {skills.map((skill, index) => (
+                {skills.map((skill) => (
                      <div key={skill.id} className="flex flex-col items-center p-4 bg-gray-800 rounded-lg transition-transform hover:scale-110">
                         <Image src={skill.logoUrl} alt={skill.name} width={64} height={64} style={{ objectFit: 'contain' }}/>
                         <p className="mt-2 text-center">{skill.name}</p>
@@ -54,7 +63,7 @@ function Skills({ skills }: { skills: any[] }) {
     )
 }
 
-function Projects({ projects }: { projects: any[] }) {
+function Projects({ projects }: { projects: Project[] }) {
     return (
         <div className="py-20">
              <h2 className="text-3xl font-bold text-center mb-8">My Projects</h2>
@@ -86,19 +95,17 @@ function Projects({ projects }: { projects: any[] }) {
 
 
 export default async function HomePage() {
-  // 1. Ambil data langsung di Server Component (App Router way)
   const profileDoc = await getDoc(doc(db, 'profile', 'main'));
-  const profile = profileDoc.data() || {};
+  const profile: Profile = profileDoc.data() || {};
 
   const skillsSnapshot = await getDocs(collection(db, 'skills'));
-  const skills = skillsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const skills: Skill[] = skillsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Skill));
 
   const projectsSnapshot = await getDocs(collection(db, 'projects'));
-  const projects = projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const projects: Project[] = projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
 
-  // 2. Render halaman dengan data yang sudah diambil
   return (
-    <div className="bg-gray-900 text-white min-h-screen">
+    <div className="bg-gray-900 text-white min-h-screen relative">
       <Scene3D />
       <main className="container mx-auto px-4 relative z-10">
         <Hero profile={profile} />
