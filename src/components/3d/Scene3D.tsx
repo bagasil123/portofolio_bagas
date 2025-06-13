@@ -6,8 +6,11 @@ import { Points, PointMaterial, Stars } from '@react-three/drei';
 import * as random from 'maath/random';
 import * as THREE from 'three';
 
-// Starfield component for the inner, more colorful stars
-const Starfield = (props: any) => {
+// --- PERBAIKAN TIPE 'ANY' ---
+// Memberikan tipe yang benar untuk props untuk lolos dari aturan ESLint
+type StarfieldProps = React.ComponentProps<typeof Points>;
+
+const Starfield = (props: StarfieldProps) => {
   const ref = useRef<THREE.Points>(null!);
   const [sphere] = useState(() => random.inSphere(new Float32Array(5000), { radius: 1.5 }) as Float32Array);
   
