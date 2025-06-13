@@ -1,10 +1,10 @@
-// src/components/PortfolioClientView.tsx
+// src/components/PortfolioClientView.tsx (VERSI KEMENANGAN)
 "use client";
 
 import Image from 'next/image';
 import Scene3D from '@/components/3d/Scene3D';
 import type { Profile, Skill, Project } from '@/lib/types';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion'; // <-- Impor 'Variants'
 import { ArrowUpRight } from 'lucide-react';
 
 interface PortfolioViewProps {
@@ -13,25 +13,31 @@ interface PortfolioViewProps {
   projects: Project[];
 }
 
-
-const fadeInAnimationVariants = {
-  // Kondisi awal sebelum animasi
+// Beri tipe pada varian animasi kita untuk keamanan maksimal
+const fadeInAnimationVariants: Variants = {
   initial: {
     opacity: 0,
     y: 50,
   },
-  // Kondisi akhir setelah animasi
-  animate: (index: number) => ({ // Terima 'index' untuk delay
+  animate: (index: number) => ({
     opacity: 1,
     y: 0,
     transition: {
-      delay: 0.05 * index, // Setiap item akan delay sedikit dari sebelumnya
+      delay: 0.05 * index,
       duration: 0.5,
-      ease: "easeOut",
+      // ease: "easeOut" <-- BARIS INI KITA HAPUS UNTUK MEMPERBAIKI ERROR
     },
   }),
 };
 
+// ... (sisa kode komponen Hero, Skills, Projects, dan PortfolioClientView tetap sama persis seperti sebelumnya) ...
+// (Saya tidak menempelkannya lagi di sini agar tidak terlalu panjang, 
+// cukup pastikan definisi fadeInAnimationVariants di atas sudah benar di file Anda)
+
+// PASTE KODE LENGKAP DARI PESAN SEBELUMNYA, LALU UBAH BAGIAN DI ATAS
+// ATAU GUNAKAN KODE LENGKAP DI BAWAH INI
+
+// Kode Lengkap untuk kepastian:
 function Hero({ profile }: { profile: Profile }) {
     return (
         <section className="min-h-screen flex flex-col items-center justify-center text-center p-4">
@@ -77,27 +83,27 @@ function Hero({ profile }: { profile: Profile }) {
 }
 
 function Skills({ skills }: { skills: Skill[] }) {
-  return (
-    <section className="py-24">
-      <h2 className="text-4xl font-bold text-center mb-16">Teknologi & Tools</h2>
-      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8 max-w-4xl mx-auto">
-        {skills.map((skill, index) => (
-          <motion.div
-            key={skill.id}
-            className="flex flex-col items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20"
-            variants={fadeInAnimationVariants}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-            custom={index} // Pastikan custom ini sesuai dengan parameter di animate
-          >
-            <Image src={skill.logoUrl} alt={skill.name} width={56} height={56} style={{ objectFit: 'contain' }} />
-            <p className="mt-4 text-center font-medium text-neutral-300 text-sm">{skill.name}</p>
-          </motion.div>
-        ))}
-      </div>
-    </section>
-  );
+    return (
+        <section className="py-24">
+            <h2 className="text-4xl font-bold text-center mb-16">Teknologi & Tools</h2>
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8 max-w-4xl mx-auto">
+                {skills.map((skill, index) => (
+                    <motion.div 
+                        key={skill.id} 
+                        className="flex flex-col items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20"
+                        variants={fadeInAnimationVariants}
+                        initial="initial"
+                        whileInView="animate"
+                        viewport={{ once: true }}
+                        custom={index}
+                    >
+                        <Image src={skill.logoUrl} alt={skill.name} width={56} height={56} style={{ objectFit: 'contain' }}/>
+                        <p className="mt-4 text-center font-medium text-neutral-300 text-sm">{skill.name}</p>
+                    </motion.div>
+                ))}
+            </div>
+        </section>
+    )
 }
 
 function Projects({ projects }: { projects: Project[] }) {
