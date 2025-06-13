@@ -1,9 +1,9 @@
 // src/app/page.tsx (VERSI FINAL DENGAN TYPESCRIPT YANG BENAR)
 
-import { db } from '../../lib/firebase';
+import { db } from '../lib/firebase';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import Image from 'next/image';
-import Scene3D from '../../lib/components/Scene3D';
+import Scene3D from '@/components/3d/Scene3D';
 
 // =======================================================
 // 1. DEFINISIKAN TIPE DATA (INTERFACE) DI SINI

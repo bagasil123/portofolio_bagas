@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
-import ProtectedAdminRoute from '../../components/ProtectedAdminRoute';
+import { db, storage } from '@/lib/firebase';
+import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import ProtectedAdminRoute from '../../layout';
 
-export default function ManageSkills() {
+export default function ManageProject() {
   const [skills, setSkills] = useState([]);
   const [skillName, setSkillName] = useState('');
   const [logoFile, setLogoFile] = useState(null);
@@ -17,45 +20,25 @@ export default function ManageSkills() {
     fetchSkills();
   }, []);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!logoFile || !skillName) return;
+
+    const logoRef = ref(storage, `skills/${logoFile.name}`);
+    await uploadBytes(logoRef, logoFile);
+    const logoUrl = await getDownloadURL(logoRef);
+
+    await addDoc(skillsCollectionRef, { name: skillName, logoUrl: logoUrl });
+    setSkillName('');
+    setLogoFile(null);
+    fetchSkills(); // Refresh list
+  };
+
   const handleDelete = async (id) => {
     const skillDoc = doc(db, 'skills', id);
     await deleteDoc(skillDoc);
     fetchSkills(); // Refresh list
   };
-
-      // --- INI BAGIAN YANG DIUBAH ---
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!logoFile || !skillName) return;
-
-        // 1. Siapkan data untuk dikirim ke Cloudinary
-        const formData = new FormData();
-        formData.append('file', logoFile);
-        formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
-
-        try {
-            // 2. Kirim file ke API Cloudinary
-            const response = await fetch(
-                `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-                {
-                    method: 'POST',
-                    body: formData,
-                }
-            );
-
-            const data = await response.json();
-            const logoUrl = data.secure_url; // Dapatkan URL gambar dari Cloudinary
-
-            // 3. Simpan URL ke Firestore (bagian ini sama seperti sebelumnya)
-            await addDoc(skillsCollectionRef, { name: skillName, logoUrl: logoUrl });
-
-            setSkillName('');
-            setLogoFile(null);
-            fetchSkills(); // Refresh list
-        } catch (error) {
-            console.error("Error uploading image:", error);
-        }
-    };
 
 
   return (

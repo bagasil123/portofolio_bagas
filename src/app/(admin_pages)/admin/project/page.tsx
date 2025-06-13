@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import ProtectedAdminRoute from '../../components/ProtectedAdminRoute';
+import ProtectedAdminRoute from '../../layout';
 
 export default function ManageSkills() {
   const [skills, setSkills] = useState([]);
