@@ -4,7 +4,12 @@ import React, { useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Image, Text, RoundedBox } from '@react-three/drei';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
-import { motion as motion3d, useMotionValue, useSpring } from 'framer-motion-3d';
+
+// --- PERBAIKAN IMPORT ---
+// Hooks diimpor dari 'framer-motion', motion component dari 'framer-motion-3d'
+import { useMotionValue, useSpring } from 'framer-motion'; 
+import { motion as motion3d } from 'framer-motion-3d';
+
 import type { Project } from '@/lib/types';
 
 // Internal component to handle the 3D content and interaction logic
@@ -17,7 +22,9 @@ const Card3DContent = ({ project }: { project: Project }) => {
   const springX = useSpring(motionX, { stiffness: 300, damping: 30, mass: 0.5 });
   const springY = useSpring(motionY, { stiffness: 300, damping: 30, mass: 0.5 });
   
-  const handleMouseMove = (e: any) => {
+  // --- PERBAIKAN TIPE 'ANY' ---
+  // Memberikan tipe yang benar untuk mouse event
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const { clientX, clientY, currentTarget } = e;
     const { left, top, width, height } = currentTarget.getBoundingClientRect();
     const x = (clientX - left - width / 2) / 20;
