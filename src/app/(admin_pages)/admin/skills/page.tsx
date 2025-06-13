@@ -3,20 +3,13 @@
 "use client";
 
 import { useState, useEffect, useCallback, FormEvent, ChangeEvent } from 'react';
-import { db, storage } from '@/lib/firebase';
+// Hanya impor 'db' dari firebase, karena storage tidak dipakai lagi
+import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Image from 'next/image';
-
-// 1. Definisikan "bentuk" atau Interface untuk data Skill
-interface Skill {
-  id: string;
-  name: string;
-  logoUrl: string;
-}
+import type { Skill } from '@/lib/types';
 
 export default function ManageSkillsPage() {
-  // 2. Beri tipe pada setiap state
   const [skills, setSkills] = useState<Skill[]>([]);
   const [skillName, setSkillName] = useState<string>('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -24,23 +17,20 @@ export default function ManageSkillsPage() {
 
   const skillsCollectionRef = collection(db, 'skills');
 
-  // 3. Gunakan useCallback untuk fungsi agar tidak dibuat ulang terus-menerus
   const fetchSkills = useCallback(async () => {
     const data = await getDocs(skillsCollectionRef);
     const skillsData = data.docs.map((doc) => ({
       id: doc.id,
-      name: doc.data().name,
-      logoUrl: doc.data().logoUrl,
+      ...doc.data(),
     })) as Skill[];
     setSkills(skillsData);
-  }, []); // Dependensi kosong karena skillsCollectionRef stabil
+  }, []); // Anda bisa menambahkan skillsCollectionRef di sini jika linter meminta
 
-  // 4. Perbaiki dependensi useEffect
   useEffect(() => {
     fetchSkills();
   }, [fetchSkills]);
 
-  // 5. Beri tipe pada parameter event 'e'
+  // --- BAGIAN INI DIUBAH TOTAL UNTUK MENGGUNAKAN CLOUDINARY ---
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!logoFile || !skillName) {
@@ -49,17 +39,30 @@ export default function ManageSkillsPage() {
     }
     setLoading(true);
 
-    try {
-      const logoRef = ref(storage, `skills/${Date.now()}-${logoFile.name}`);
-      await uploadBytes(logoRef, logoFile);
-      const logoUrl = await getDownloadURL(logoRef);
+    const formData = new FormData();
+    formData.append('file', logoFile);
+    formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
 
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+      const logoUrl = data.secure_url; // URL gambar dari Cloudinary
+
+      // Simpan URL dari Cloudinary ke Firestore
       await addDoc(skillsCollectionRef, { name: skillName, logoUrl: logoUrl });
       
-      // Reset form dan refresh data
+      alert("Skill berhasil ditambahkan!");
+      const fileInput = document.getElementById('file-input') as HTMLInputElement;
+      if(fileInput) fileInput.value = "";
       setSkillName('');
       setLogoFile(null);
-      // document.getElementById('file-input')?.value = ""; // Cara untuk mereset input file
       await fetchSkills();
     } catch (error) {
       console.error("Error adding skill: ", error);
@@ -68,6 +71,7 @@ export default function ManageSkillsPage() {
       setLoading(false);
     }
   };
+  // --- AKHIR BAGIAN YANG DIUBAH ---
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -101,7 +105,7 @@ export default function ManageSkillsPage() {
             id="file-input"
             type="file"
             onChange={handleFileChange}
-            accept="image/png, image/jpeg, image/svg+xml"
+            accept="image/png, image/jpeg, image/svg+xml, image/webp"
             className="p-2 bg-gray-700 rounded border border-gray-600 w-full"
             required
           />

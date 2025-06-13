@@ -2,22 +2,13 @@
 "use client";
 
 import { useState, useEffect, useCallback, FormEvent } from 'react';
-import { db, storage } from '@/lib/firebase';
+// Hanya impor 'db', karena storage dari firebase tidak dipakai
+import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Image from 'next/image';
-
-// 1. Definisikan Interface untuk data Project
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  projectUrl: string;
-}
+import type { Project } from '@/lib/types'; // Impor tipe dari file terpusat
 
 export default function ManageProjectsPage() {
-  // 2. Beri tipe yang benar pada semua state
   const [projects, setProjects] = useState<Project[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -36,7 +27,7 @@ export default function ManageProjectsPage() {
     })) as Project[];
     setProjects(projectsData);
     setLoading(false);
-  }, []); // Dependensi kosong karena projectsCollectionRef stabil
+  }, []); 
 
   useEffect(() => {
     fetchProjects();
@@ -50,20 +41,34 @@ export default function ManageProjectsPage() {
     }
     setLoading(true);
 
-    try {
-      const imageRef = ref(storage, `projects/${Date.now()}-${imageFile.name}`);
-      await uploadBytes(imageRef, imageFile);
-      const imageUrl = await getDownloadURL(imageRef);
+    // --- LOGIKA UPLOAD CLOUDINARY ---
+    const formData = new FormData();
+    formData.append('file', imageFile);
+    formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
 
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+      const imageUrl = data.secure_url; // URL gambar dari Cloudinary
+
+      // Simpan URL dari Cloudinary ke Firestore
       await addDoc(projectsCollectionRef, { title, description, projectUrl, imageUrl });
       
       alert("Proyek berhasil ditambahkan!");
       // Reset form dan refresh data
+      const fileInput = document.getElementById('project-image-input') as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
       setTitle('');
       setDescription('');
       setProjectUrl('');
       setImageFile(null);
-      // document.getElementById('project-image-input')?.value = ""; // Reset input file
       await fetchProjects();
     } catch (error) {
       console.error("Error adding project: ", error);
@@ -71,6 +76,7 @@ export default function ManageProjectsPage() {
     } finally {
       setLoading(false);
     }
+    // --- AKHIR LOGIKA UPLOAD CLOUDINARY ---
   };
   
   const handleDelete = async (id: string) => {
