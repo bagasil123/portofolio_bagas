@@ -30,10 +30,6 @@ const fadeInAnimationVariants: Variants = {
   }),
 };
 
-const cardHoverVariants: Variants = {
-  hover: { scale: 1.05, transition: { duration: 0.3 } },
-};
-
 function Hero({ profile }: { profile: Profile }) {
   return (
     <section className="min-h-screen flex flex-col items-center justify-center text-center p-4 relative overflow-hidden">
@@ -94,7 +90,7 @@ function Skills({ skills }: { skills: Skill[] }) {
             whileInView="animate"
             viewport={{ once: true }}
             custom={index}
-            whileHover={cardHoverVariants.hover}
+            whileHover={{ scale: 1.05, transition: { duration: 0.3 } }} // Definisi inline
           >
             <Image src={skill.logoUrl} alt={skill.name} width={64} height={64} className="object-contain" />
             <p className="mt-4 text-center font-medium text-gray-300 text-sm">{skill.name}</p>
@@ -119,7 +115,7 @@ function Projects({ projects }: { projects: Project[] }) {
             whileInView="animate"
             viewport={{ once: true }}
             custom={index}
-            whileHover={cardHoverVariants.hover}
+            whileHover={{ scale: 1.05, transition: { duration: 0.3 } }} // Definisi inline
           >
             <div className="overflow-hidden">
               <Image
