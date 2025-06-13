@@ -4,9 +4,7 @@ import React, { useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Image, Text, RoundedBox } from '@react-three/drei';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
-import * as THREE from 'three'; 
-// --- PERBAIKAN IMPORT ---
-// Hooks diimpor dari 'framer-motion', motion component dari 'framer-motion-3d'
+
 import { useMotionValue, useSpring } from 'framer-motion'; 
 import { motion as motion3d } from 'framer-motion-3d';
 
@@ -14,7 +12,10 @@ import type { Project } from '@/lib/types';
 
 // Internal component to handle the 3D content and interaction logic
 const Card3DContent = ({ project }: { project: Project }) => {
-  const meshRef = useRef<THREE.Group>(null!);
+  // --- PERBAIKAN UTAMA ---
+  // Kita biarkan TypeScript menyimpulkan tipe yang benar dari komponen motion3d.group
+  // dengan menginisialisasi ref dengan null tanpa memberikan tipe generik.
+  const meshRef = useRef(null); 
   
   const motionX = useMotionValue(0);
   const motionY = useMotionValue(0);
@@ -22,15 +23,13 @@ const Card3DContent = ({ project }: { project: Project }) => {
   const springX = useSpring(motionX, { stiffness: 300, damping: 30, mass: 0.5 });
   const springY = useSpring(motionY, { stiffness: 300, damping: 30, mass: 0.5 });
   
-  // --- PERBAIKAN TIPE 'ANY' ---
-  // Memberikan tipe yang benar untuk mouse event
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const { clientX, clientY, currentTarget } = e;
     const { left, top, width, height } = currentTarget.getBoundingClientRect();
     const x = (clientX - left - width / 2) / 20;
     const y = (clientY - top - height / 2) / 20;
     motionX.set(x * 0.05);
-    motionY.set(y * -0.05); // Invert Y for natural feel
+    motionY.set(y * -0.05);
   };
 
   const handleMouseLeave = () => {
