@@ -27,7 +27,7 @@ export default function ManageProjectsPage() {
     })) as Project[];
     setProjects(projectsData);
     setLoading(false);
-  }, []); 
+  }, [projectsCollectionRef]); 
 
   useEffect(() => {
     fetchProjects();

@@ -24,7 +24,7 @@ export default function ManageSkillsPage() {
       ...doc.data(),
     })) as Skill[];
     setSkills(skillsData);
-  }, []); // Anda bisa menambahkan skillsCollectionRef di sini jika linter meminta
+  }, [skillsCollectionRef]); // Anda bisa menambahkan skillsCollectionRef di sini jika linter meminta
 
   useEffect(() => {
     fetchSkills();
