@@ -13,87 +13,97 @@ interface PortfolioViewProps {
   projects: Project[];
 }
 
-// ===============================================
-// Definisikan varian animasi untuk Framer Motion
-// ===============================================
+
 const fadeInAnimationVariants = {
+  // Kondisi awal sebelum animasi
   initial: {
     opacity: 0,
-    y: 100,
+    y: 50,
   },
-  animate: (index: number) => ({
+  // Kondisi akhir setelah animasi
+  animate: (index: number) => ({ // Terima 'index' untuk delay
     opacity: 1,
     y: 0,
     transition: {
-      delay: 0.05 * index,
+      delay: 0.05 * index, // Setiap item akan delay sedikit dari sebelumnya
+      duration: 0.5,
+      ease: "easeOut",
     },
   }),
 };
 
-
-// ===============================================
-// Sub-komponen yang sudah didesain ulang
-// ===============================================
-
 function Hero({ profile }: { profile: Profile }) {
     return (
-        <motion.div 
-            className="min-h-screen flex flex-col items-center justify-center text-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1 }}
-        >
-            <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400">
+        <section className="min-h-screen flex flex-col items-center justify-center text-center p-4">
+            <motion.h1 
+                className="text-5xl md:text-7xl lg:text-8xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 py-2"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+            >
                 {profile.name || 'Nama Anda'}
-            </h1>
-            <p className="text-xl md:text-2xl mt-4 text-neutral-300">
+            </motion.h1>
+            <motion.p 
+                className="text-lg md:text-xl mt-4 text-neutral-300"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+            >
                 {profile.title || 'Title Anda'}
-            </p>
-            <p className="mt-6 max-w-2xl mx-auto text-neutral-400">
+            </motion.p>
+            <motion.p 
+                className="mt-6 max-w-2xl mx-auto text-neutral-400"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+            >
                 {profile.bio || 'Bio Anda'}
-            </p>
+            </motion.p>
             {profile.cvUrl && (
                 <motion.a 
                     href={profile.cvUrl} target="_blank" rel="noopener noreferrer" 
-                    className="mt-8 inline-block bg-white text-black px-6 py-3 rounded-full font-bold transition-transform hover:scale-105"
-                    whileHover={{ scale: 1.05 }}
+                    className="mt-8 inline-block bg-white text-black px-8 py-3 rounded-full font-bold transition-transform hover:scale-105 shadow-lg"
+                    whileHover={{ scale: 1.05, boxShadow: "0px 0px 30px rgba(255, 255, 255, 0.3)" }}
                     whileTap={{ scale: 0.95 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.6 }}
                 >
-                    Download CV
+                    Lihat CV Saya
                 </motion.a>
             )}
-        </motion.div>
-    )
-}
-
-function Skills({ skills }: { skills: Skill[] }) {
-    return (
-        <section className="py-20">
-            <h2 className="text-4xl font-bold text-center mb-12">My Skills</h2>
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8 max-w-4xl mx-auto">
-                {skills.map((skill, index) => (
-                    <motion.div 
-                        key={skill.id} 
-                        className="flex flex-col items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm"
-                        variants={fadeInAnimationVariants}
-                        initial="initial"
-                        whileInView="animate"
-                        viewport={{ once: true }}
-                        custom={index}
-                    >
-                        <Image src={skill.logoUrl} alt={skill.name} width={64} height={64} style={{ objectFit: 'contain' }}/>
-                        <p className="mt-4 text-center font-semibold text-neutral-300">{skill.name}</p>
-                    </motion.div>
-                ))}
-            </div>
         </section>
     )
 }
 
+function Skills({ skills }: { skills: Skill[] }) {
+  return (
+    <section className="py-24">
+      <h2 className="text-4xl font-bold text-center mb-16">Teknologi & Tools</h2>
+      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8 max-w-4xl mx-auto">
+        {skills.map((skill, index) => (
+          <motion.div
+            key={skill.id}
+            className="flex flex-col items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20"
+            variants={fadeInAnimationVariants}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            custom={index} // Pastikan custom ini sesuai dengan parameter di animate
+          >
+            <Image src={skill.logoUrl} alt={skill.name} width={56} height={56} style={{ objectFit: 'contain' }} />
+            <p className="mt-4 text-center font-medium text-neutral-300 text-sm">{skill.name}</p>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Projects({ projects }: { projects: Project[] }) {
     return (
-        <section className="py-20">
-             <h2 className="text-4xl font-bold text-center mb-12">My Projects</h2>
+        <section className="py-24">
+             <h2 className="text-4xl font-bold text-center mb-16">Proyek Pilihan</h2>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
                 {projects.map((project, index) => (
                     <motion.div 
@@ -115,10 +125,10 @@ function Projects({ projects }: { projects: Project[] }) {
                             />
                         </div>
                         <div className="p-6">
-                            <h3 className="text-xl font-bold">{project.title}</h3>
+                            <h3 className="text-xl font-bold text-neutral-100">{project.title}</h3>
                             <p className="mt-2 text-neutral-400 text-sm h-20 overflow-hidden">{project.description}</p>
                             <a href={project.projectUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center text-blue-400 hover:text-blue-300 font-semibold group">
-                                View Project <ArrowUpRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"/>
+                                Lihat Proyek <ArrowUpRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"/>
                             </a>
                         </div>
                     </motion.div>
@@ -128,14 +138,11 @@ function Projects({ projects }: { projects: Project[] }) {
     )
 }
 
-// ===============================================
-// Komponen Utama Pembungkus
-// ===============================================
 export default function PortfolioClientView({ profile, skills, projects }: PortfolioViewProps) {
   return (
     <div className="bg-neutral-950 text-white min-h-screen selection:bg-blue-500/50">
       <Scene3D />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-neutral-950"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-neutral-950/80 to-neutral-950"></div>
       <main className="container mx-auto px-4 relative z-10">
         <Hero profile={profile} />
         <Skills skills={skills} />

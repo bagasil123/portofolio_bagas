@@ -1,33 +1,46 @@
-// Update the import path below to the correct location of your ProtectedAdminRoute component.
-// For example, if layout.tsx is in the parent folder:
-"use client";
-import ProtectedAdminRoute from '../layout';
-import { auth } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
-import { useRouter } from 'next/router';
+// src/app/(admin_pages)/admin/page.tsx
+
 import Link from 'next/link';
+import { Shield, FileText, Briefcase } from 'lucide-react';
 
-export default function AdminDashboard() {
-  const router = useRouter();
+const cardItems = [
+  {
+    href: '/admin/skills',
+    title: 'Manage Skills',
+    description: 'Tambah, lihat, dan hapus skill set Anda.',
+    icon: <Shield className="w-8 h-8 text-blue-400" />
+  },
+  {
+    href: '/admin/projects',
+    title: 'Manage Projects',
+    description: 'Tambah, lihat, dan hapus proyek portofolio.',
+    icon: <Briefcase className="w-8 h-8 text-green-400" />
+  },
+  {
+    href: '/admin/profile',
+    title: 'Manage Profile',
+    description: 'Ubah nama, title, bio, dan link CV Anda.',
+    icon: <FileText className="w-8 h-8 text-yellow-400" />
+  }
+];
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    router.push('/login');
-  };
-
+export default function AdminDashboardPage() {
   return (
-    <ProtectedAdminRoute>
-      <div className="p-8 bg-gray-900 text-white min-h-screen">
-        <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl">Admin Dashboard</h1>
-            <button onClick={handleLogout} className="p-2 bg-red-600 rounded">Logout</button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-           <Link href="/admin/skills" className="bg-gray-800 p-6 rounded-lg hover:bg-gray-700">Manage Skills</Link>
-           <Link href="/admin/projects" className="bg-gray-800 p-6 rounded-lg hover:bg-gray-700">Manage Projects</Link>
-           <Link href="/admin/profile" className="bg-gray-800 p-6 rounded-lg hover:bg-gray-700">Manage Profile</Link>
-        </div>
+    <div className="p-8 text-white">
+      <h1 className="text-4xl font-bold mb-8">Admin Dashboard</h1>
+      <p className="text-neutral-400 mb-12">Pilih salah satu menu di bawah ini untuk mulai mengelola konten website Anda.</p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {cardItems.map((item) => (
+          <Link href={item.href} key={item.title} className="block p-6 bg-gray-800 rounded-xl border border-gray-700 hover:bg-gray-700 hover:border-blue-500 transition-all duration-300 transform hover:-translate-y-1">
+            <div className="flex items-center gap-4">
+              {item.icon}
+              <h2 className="text-xl font-bold text-neutral-100">{item.title}</h2>
+            </div>
+            <p className="mt-4 text-neutral-300">{item.description}</p>
+          </Link>
+        ))}
       </div>
-    </ProtectedAdminRoute>
+    </div>
   );
 }
