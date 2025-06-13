@@ -1,95 +1,127 @@
-import { useState, useEffect } from 'react';
-import ProtectedAdminRoute from '../../layout';
+// src/app/(admin_pages)/admin/skills/page.tsx
 
-export default function ManageSkills() {
-  const [skills, setSkills] = useState([]);
-  const [skillName, setSkillName] = useState('');
-  const [logoFile, setLogoFile] = useState(null);
+"use client";
+
+import { useState, useEffect, useCallback, FormEvent, ChangeEvent } from 'react';
+import { db, storage } from '@/lib/firebase';
+import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import Image from 'next/image';
+
+// 1. Definisikan "bentuk" atau Interface untuk data Skill
+interface Skill {
+  id: string;
+  name: string;
+  logoUrl: string;
+}
+
+export default function ManageSkillsPage() {
+  // 2. Beri tipe pada setiap state
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [skillName, setSkillName] = useState<string>('');
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const skillsCollectionRef = collection(db, 'skills');
 
-  const fetchSkills = async () => {
+  // 3. Gunakan useCallback untuk fungsi agar tidak dibuat ulang terus-menerus
+  const fetchSkills = useCallback(async () => {
     const data = await getDocs(skillsCollectionRef);
-    setSkills(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-  };
+    const skillsData = data.docs.map((doc) => ({
+      id: doc.id,
+      name: doc.data().name,
+      logoUrl: doc.data().logoUrl,
+    })) as Skill[];
+    setSkills(skillsData);
+  }, []); // Dependensi kosong karena skillsCollectionRef stabil
 
+  // 4. Perbaiki dependensi useEffect
   useEffect(() => {
     fetchSkills();
-  }, []);
+  }, [fetchSkills]);
 
-  const handleDelete = async (id) => {
-    const skillDoc = doc(db, 'skills', id);
-    await deleteDoc(skillDoc);
-    fetchSkills(); // Refresh list
+  // 5. Beri tipe pada parameter event 'e'
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!logoFile || !skillName) {
+      alert("Nama skill dan file logo harus diisi!");
+      return;
+    }
+    setLoading(true);
+
+    try {
+      const logoRef = ref(storage, `skills/${Date.now()}-${logoFile.name}`);
+      await uploadBytes(logoRef, logoFile);
+      const logoUrl = await getDownloadURL(logoRef);
+
+      await addDoc(skillsCollectionRef, { name: skillName, logoUrl: logoUrl });
+      
+      // Reset form dan refresh data
+      setSkillName('');
+      setLogoFile(null);
+      // document.getElementById('file-input')?.value = ""; // Cara untuk mereset input file
+      await fetchSkills();
+    } catch (error) {
+      console.error("Error adding skill: ", error);
+      alert("Gagal menambahkan skill. Cek console untuk detail.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-      // --- INI BAGIAN YANG DIUBAH ---
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!logoFile || !skillName) return;
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setLogoFile(e.target.files[0]);
+    }
+  };
 
-        // 1. Siapkan data untuk dikirim ke Cloudinary
-        const formData = new FormData();
-        formData.append('file', logoFile);
-        formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
-
-        try {
-            // 2. Kirim file ke API Cloudinary
-            const response = await fetch(
-                `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-                {
-                    method: 'POST',
-                    body: formData,
-                }
-            );
-
-            const data = await response.json();
-            const logoUrl = data.secure_url; // Dapatkan URL gambar dari Cloudinary
-
-            // 3. Simpan URL ke Firestore (bagian ini sama seperti sebelumnya)
-            await addDoc(skillsCollectionRef, { name: skillName, logoUrl: logoUrl });
-
-            setSkillName('');
-            setLogoFile(null);
-            fetchSkills(); // Refresh list
-        } catch (error) {
-            console.error("Error uploading image:", error);
-        }
-    };
-
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus skill ini?")) {
+      const skillDoc = doc(db, 'skills', id);
+      await deleteDoc(skillDoc);
+      await fetchSkills();
+    }
+  };
 
   return (
-    <ProtectedAdminRoute>
-      <div className="p-8">
-        <h1 className="text-2xl mb-4">Manage Skills</h1>
-        {/* Form to add new skill */}
-        <form onSubmit={handleSubmit} className="mb-8 p-4 bg-gray-200 rounded">
+    <div className="p-8 text-white">
+      <h1 className="text-3xl font-bold mb-6">Manage Skills</h1>
+      
+      <form onSubmit={handleSubmit} className="mb-8 p-6 bg-gray-800 rounded-lg shadow-md">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <input
             type="text"
             value={skillName}
             onChange={(e) => setSkillName(e.target.value)}
-            placeholder="Skill Name"
-            className="p-2 mr-2 rounded"
+            placeholder="Skill Name (e.g., React)"
+            className="p-3 bg-gray-700 rounded border border-gray-600 w-full"
+            required
           />
           <input
+            id="file-input"
             type="file"
-            onChange={(e) => setLogoFile(e.target.files[0])}
-            className="p-1 mr-2"
+            onChange={handleFileChange}
+            accept="image/png, image/jpeg, image/svg+xml"
+            className="p-2 bg-gray-700 rounded border border-gray-600 w-full"
+            required
           />
-          <button type="submit" className="p-2 bg-blue-500 text-white rounded">Add Skill</button>
-        </form>
-
-        {/* List of existing skills */}
-        <div className="grid grid-cols-4 gap-4">
-          {skills.map((skill) => (
-            <div key={skill.id} className="p-4 bg-white rounded shadow text-center">
-              <img src={skill.logoUrl} alt={skill.name} className="h-16 w-16 mx-auto mb-2"/>
-              <p>{skill.name}</p>
-              <button onClick={() => handleDelete(skill.id)} className="mt-2 text-red-500 text-sm">Delete</button>
-            </div>
-          ))}
+          <button type="submit" className="p-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors w-full" disabled={loading}>
+            {loading ? 'Adding...' : 'Add Skill'}
+          </button>
         </div>
+      </form>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        {skills.map((skill) => (
+          <div key={skill.id} className="p-4 bg-gray-800 rounded-lg shadow-md text-center relative">
+            <Image src={skill.logoUrl} alt={skill.name} width={64} height={64} className="mx-auto mb-2 h-16 w-16 object-contain"/>
+            <p className="font-semibold break-words">{skill.name}</p>
+            <button onClick={() => handleDelete(skill.id)} className="mt-2 text-xs text-red-400 hover:text-red-300">
+              Delete
+            </button>
+          </div>
+        ))}
       </div>
-    </ProtectedAdminRoute>
+    </div>
   );
 }

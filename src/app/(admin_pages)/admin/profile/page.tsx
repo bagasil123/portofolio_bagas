@@ -1,78 +1,75 @@
-import { useState, useEffect } from 'react';
-import { db, storage } from '@/lib/firebase';
-import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import ProtectedAdminRoute from '../../layout';
+// src/app/(admin_pages)/admin/profile/page.tsx
+"use client";
 
-export default function ManageProject() {
-  const [skills, setSkills] = useState([]);
-  const [skillName, setSkillName] = useState('');
-  const [logoFile, setLogoFile] = useState(null);
+import { useState, useEffect, useCallback, FormEvent } from 'react';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-  const skillsCollectionRef = collection(db, 'skills');
+// Definisikan Interface untuk data Profile
+interface Profile {
+  name?: string;
+  title?: string;
+  bio?: string;
+  cvUrl?: string;
+}
 
-  const fetchSkills = async () => {
-    const data = await getDocs(skillsCollectionRef);
-    setSkills(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-  };
+export default function ManageProfilePage() {
+  const [profile, setProfile] = useState<Profile>({});
+  const [loading, setLoading] = useState(false);
+
+  // Dokumen profil kita beri ID 'main' agar selalu sama
+  const profileDocRef = doc(db, 'profile', 'main');
+
+  const fetchProfile = useCallback(async () => {
+    const docSnap = await getDoc(profileDocRef);
+    if (docSnap.exists()) {
+      setProfile(docSnap.data() as Profile);
+    } else {
+      console.log("No such document!");
+    }
+  }, [profileDocRef]);
 
   useEffect(() => {
-    fetchSkills();
-  }, []);
+    fetchProfile();
+  }, [fetchProfile]);
 
-  const handleSubmit = async (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setProfile(prevProfile => ({
+      ...prevProfile,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!logoFile || !skillName) return;
-
-    const logoRef = ref(storage, `skills/${logoFile.name}`);
-    await uploadBytes(logoRef, logoFile);
-    const logoUrl = await getDownloadURL(logoRef);
-
-    await addDoc(skillsCollectionRef, { name: skillName, logoUrl: logoUrl });
-    setSkillName('');
-    setLogoFile(null);
-    fetchSkills(); // Refresh list
+    setLoading(true);
+    try {
+      // Gunakan setDoc dengan merge:true untuk update atau create jika belum ada
+      await setDoc(profileDocRef, profile, { merge: true });
+      alert("Profile updated successfully!");
+    } catch (error) {
+      console.error("Error updating profile: ", error);
+      alert("Gagal mengupdate profile.");
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const handleDelete = async (id) => {
-    const skillDoc = doc(db, 'skills', id);
-    await deleteDoc(skillDoc);
-    fetchSkills(); // Refresh list
-  };
-
 
   return (
-    <ProtectedAdminRoute>
-      <div className="p-8">
-        <h1 className="text-2xl mb-4">Manage Skills</h1>
-        {/* Form to add new skill */}
-        <form onSubmit={handleSubmit} className="mb-8 p-4 bg-gray-200 rounded">
-          <input
-            type="text"
-            value={skillName}
-            onChange={(e) => setSkillName(e.target.value)}
-            placeholder="Skill Name"
-            className="p-2 mr-2 rounded"
-          />
-          <input
-            type="file"
-            onChange={(e) => setLogoFile(e.target.files[0])}
-            className="p-1 mr-2"
-          />
-          <button type="submit" className="p-2 bg-blue-500 text-white rounded">Add Skill</button>
-        </form>
-
-        {/* List of existing skills */}
-        <div className="grid grid-cols-4 gap-4">
-          {skills.map((skill) => (
-            <div key={skill.id} className="p-4 bg-white rounded shadow text-center">
-              <img src={skill.logoUrl} alt={skill.name} className="h-16 w-16 mx-auto mb-2"/>
-              <p>{skill.name}</p>
-              <button onClick={() => handleDelete(skill.id)} className="mt-2 text-red-500 text-sm">Delete</button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </ProtectedAdminRoute>
+    <div className="p-8 text-white">
+      <h1 className="text-3xl font-bold mb-6">Manage Profile</h1>
+      
+      <form onSubmit={handleSubmit} className="p-6 bg-gray-800 rounded-lg shadow-md flex flex-col gap-4">
+        <input type="text" name="name" value={profile.name || ''} onChange={handleInputChange} placeholder="Your Name" className="p-3 bg-gray-700 rounded"/>
+        <input type="text" name="title" value={profile.title || ''} onChange={handleInputChange} placeholder="Your Title (e.g., Frontend Developer)" className="p-3 bg-gray-700 rounded"/>
+        <textarea name="bio" value={profile.bio || ''} onChange={handleInputChange} placeholder="A short bio about you" className="p-3 bg-gray-700 rounded h-32"/>
+        <input type="url" name="cvUrl" value={profile.cvUrl || ''} onChange={handleInputChange} placeholder="Link to your CV (PDF)" className="p-3 bg-gray-700 rounded"/>
+        
+        <button type="submit" className="p-3 bg-green-600 rounded hover:bg-green-700" disabled={loading}>
+          {loading ? 'Saving...' : 'Save Profile'}
+        </button>
+      </form>
+    </div>
   );
 }

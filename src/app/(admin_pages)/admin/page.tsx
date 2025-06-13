@@ -1,5 +1,6 @@
 // Update the import path below to the correct location of your ProtectedAdminRoute component.
 // For example, if layout.tsx is in the parent folder:
+"use client";
 import ProtectedAdminRoute from '../layout';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';

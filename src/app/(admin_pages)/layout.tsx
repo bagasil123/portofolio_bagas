@@ -1,14 +1,15 @@
-// src/app/(admin_pages)/layout.tsx (Pengganti ProtectedAdminRoute.js)
+// src/app/(admin_pages)/layout.tsx
+
 "use client";
- // Layout ini perlu hooks, jadi harus client component
+
 import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation"; // Gunakan dari 'next/navigation'
-import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, ReactNode } from "react";
 
 export default function AdminLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -21,9 +22,12 @@ export default function AdminLayout({
   }, [user, loading, router]);
 
   // Selama loading atau jika tidak ada user, tampilkan pesan loading
-  // untuk mencegah kilasan konten yang dilindungi
   if (loading || !user) {
-    return <div>Loading access...</div>;
+    return (
+        <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
+            <p>Loading & Verifying Access...</p>
+        </div>
+    );
   }
 
   // Jika user ada, tampilkan halaman admin yang sebenarnya
