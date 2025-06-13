@@ -1,36 +1,42 @@
-// src/app/page.tsx
+// src/app/page.tsx (Versi Tes dengan Data Palsu)
 
-import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import PortfolioClientView from '@/components/PortfolioClientView';
-// Impor tipe dari file terpusat
 import type { Profile, Skill, Project } from '@/lib/types';
 
-export default async function HomePage() {
-  // Ambil data dari Firestore
-  const profileDoc = await getDoc(doc(db, 'profile', 'main'));
-  const skillsSnapshot = await getDocs(collection(db, 'skills'));
-  const projectsSnapshot = await getDocs(collection(db, 'projects'));
+// Ini adalah Halaman Server, tapi kita tidak mengambil data (tidak async)
+export default function HomePage() {
+  
+  // 1. Kita buat data palsu di sini
+  const fakeProfile: Profile = {
+    name: "Bagas (Nama Tes)",
+    title: "Web Developer & Debugger Handal",
+    bio: "Ini adalah bio yang ditampilkan dari data palsu untuk mengetes deployment.",
+    cvUrl: "#",
+  };
 
-  // Gunakan 'as' untuk memberitahu TypeScript bentuk data yang benar
-  const profile = (profileDoc.data() || {}) as Profile;
+  const fakeSkills: Skill[] = [
+    { id: '1', name: 'Next.js', logoUrl: 'https://cdn.worldvectorlogo.com/logos/next-js.svg' },
+    { id: '2', name: 'Firebase', logoUrl: 'https://cdn.worldvectorlogo.com/logos/firebase-1.svg' },
+    { id: '3', name: 'Vercel', logoUrl: 'https://static-00.iconduck.com/assets.00/vercel-icon-512x449-3422jidz.png' },
+    { id: '4', name: 'TypeScript', logoUrl: 'https://cdn.worldvectorlogo.com/logos/typescript.svg' },
+  ];
 
-  const skills = skillsSnapshot.docs.map(doc => ({ 
-    id: doc.id, 
-    ...doc.data() 
-  })) as Skill[];
+  const fakeProjects: Project[] = [
+    {
+      id: 'p1',
+      title: 'Proyek Tes 1',
+      description: 'Deskripsi untuk proyek tes ini untuk memastikan komponen bisa dirender dengan benar.',
+      imageUrl: 'https://via.placeholder.com/600x360.png/1a202c/FFFFFF?text=Project+Image',
+      projectUrl: '#',
+    },
+  ];
 
-  const projects = projectsSnapshot.docs.map(doc => ({ 
-    id: doc.id, 
-    ...doc.data() 
-  })) as Project[];
-
-  // Lemparkan data yang sudah 'type-safe' ke Client Component
+  // 2. Lemparkan data palsu ke Client Component
   return (
     <PortfolioClientView 
-      profile={profile}
-      skills={skills}
-      projects={projects}
+      profile={fakeProfile}
+      skills={fakeSkills}
+      projects={fakeProjects}
     />
   );
 }
