@@ -1,7 +1,7 @@
 // src/app/(admin_pages)/admin/projects/page.tsx
 "use client";
 
-import { useState, useEffect, useCallback, FormEvent, ChangeEvent } from 'react';
+import { useState, useEffect, useCallback, FormEvent } from 'react';
 import { db, storage } from '@/lib/firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
