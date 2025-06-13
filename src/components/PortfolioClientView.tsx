@@ -58,10 +58,9 @@ const Skills = ({ skills }: { skills: Skill[] }) => (
       initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.8 }}
     >Teknologi & Tools</motion.h2>
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 max-w-6xl mx-auto px-4">
-      {skills.map((skill, index) => (
-        // --- PERBAIKAN UTAMA: Tambahkan pengecekan data ---
-        // Ini memastikan kita hanya merender kartu jika skill.logoUrl ada isinya.
-        skill.logoUrl && (
+      {skills
+        .filter(skill => skill && skill.logoUrl) // Menambahkan pengecekan `skill` itu sendiri
+        .map((skill, index) => (
           <motion.div
             key={skill.id}
             variants={fadeInAnimationVariants}
@@ -72,7 +71,6 @@ const Skills = ({ skills }: { skills: Skill[] }) => (
           >
             <SkillCard3D skill={skill} />
           </motion.div>
-        )
       ))}
     </div>
   </section>
@@ -85,10 +83,9 @@ const Projects = ({ projects }: { projects: Project[] }) => (
       initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.8 }}
     >Proyek Unggulan</motion.h2>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto px-4">
-      {projects.map((project, index) => (
-        // --- PERBAIKAN UTAMA: Tambahkan pengecekan data ---
-        // Ini memastikan kita hanya merender kartu jika project.imageUrl ada isinya.
-        project.imageUrl && (
+      {projects
+        .filter(project => project && project.imageUrl) // Menambahkan pengecekan `project` itu sendiri
+        .map((project, index) => (
           <motion.div
             key={project.id}
             variants={fadeInAnimationVariants}
@@ -99,7 +96,6 @@ const Projects = ({ projects }: { projects: Project[] }) => (
           >
             <ProjectCard3D project={project} />
           </motion.div>
-        )
       ))}
     </div>
   </section>
@@ -109,14 +105,21 @@ const Projects = ({ projects }: { projects: Project[] }) => (
  * The main client-side component that assembles the entire portfolio view.
  */
 export default function PortfolioClientView({ profile, skills, projects }: PortfolioViewProps) {
+  // --- PERBAIKAN UTAMA: Memberikan nilai default yang aman untuk semua props ---
+  // Ini mencegah error jika salah satu props yang datang dari server adalah null atau undefined.
+  const safeProfile = profile || {};
+  const safeSkills = skills || [];
+  const safeProjects = projects || [];
+
   return (
     <div className="min-h-screen text-white selection:bg-orange-500/50 md:cursor-none bg-neutral-900">
       <AnimatedCursor />
       <Scene3D />
       <main className="relative">
-        <Hero profile={profile} />
-        <Skills skills={skills} />
-        <Projects projects={projects} />
+        {/* Menggunakan data yang sudah aman */}
+        <Hero profile={safeProfile} />
+        <Skills skills={safeSkills} />
+        <Projects projects={safeProjects} />
       </main>
     </div>
   );
