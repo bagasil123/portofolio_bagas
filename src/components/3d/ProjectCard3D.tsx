@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Image, Text, RoundedBox } from '@react-three/drei';
+import { Image, Text } from '@react-three/drei';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
 
 import { useMotionValue, useSpring } from 'framer-motion'; 
@@ -12,9 +12,6 @@ import type { Project } from '@/lib/types';
 
 // Internal component to handle the 3D content and interaction logic
 const Card3DContent = ({ project }: { project: Project }) => {
-  // --- PERBAIKAN UTAMA ---
-  // Kita biarkan TypeScript menyimpulkan tipe yang benar dari komponen motion3d.group
-  // dengan menginisialisasi ref dengan null tanpa memberikan tipe generik.
   const meshRef = useRef(null); 
   
   const motionX = useMotionValue(0);
@@ -48,15 +45,44 @@ const Card3DContent = ({ project }: { project: Project }) => {
         <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
         <pointLight position={[-10, -10, -10]} />
         
-        <motion3d.group ref={meshRef} rotation-x={springY} rotation-y={springX}>
-          <RoundedBox args={[4, 5, 0.1]} radius={0.1}>
-            <meshStandardMaterial color="#111827" roughness={0.4} metalness={0.2} />
-          </RoundedBox>
-          <Image url={project.imageUrl} alt={project.title} scale={[3.6, 2.2, 1]} position={[0, 1.3, 0.1]} />
-          <Text position={[0, -0.3, 0.1]} color="white" fontSize={0.25} maxWidth={3.5} textAlign="center">
+        <motion3d.group
+          ref={meshRef}
+          rotation-x={springY}
+          rotation-y={springX}
+        >
+          {/* Card background */}
+          <mesh>
+            <boxGeometry args={[4, 5, 0.12]} />
+            <meshStandardMaterial color="#18181b" roughness={0.45} metalness={0.18} />
+          </mesh>
+          {/* Project image */}
+          <Image
+            url={project.imageUrl}
+            scale={[3.8, 2.5]}
+            position={[0, 1.25, 0.07]}
+            transparent
+          />
+          {/* Project title */}
+          <Text
+            position={[0, -0.25, 0.08]}
+            color="#fff"
+            fontSize={0.24}
+            maxWidth={3.2}
+            textAlign="center"
+            anchorY="middle"
+          >
             {project.title}
           </Text>
-          <Text position={[0, -0.7, 0.1]} color="#9CA3AF" fontSize={0.14} maxWidth={3.2} textAlign="center" anchorY="top" lineHeight={1.4}>
+          {/* Project description */}
+          <Text
+            position={[0, -0.7, 0.08]}
+            color="#a1a1aa"
+            fontSize={0.13}
+            maxWidth={3.1}
+            textAlign="center"
+            anchorY="top"
+            lineHeight={1.35}
+          >
             {project.description}
           </Text>
         </motion3d.group>

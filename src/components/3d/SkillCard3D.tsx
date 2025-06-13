@@ -21,7 +21,6 @@ export const SkillCard3D = ({ skill }: { skill: Skill }) => {
           <Float speed={5} rotationIntensity={1} floatIntensity={1}>
             <Image
               url={skill.logoUrl}
-              alt={skill.name}
               scale={1.5}
               transparent
               opacity={0.9}
