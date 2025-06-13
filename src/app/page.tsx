@@ -1,42 +1,42 @@
-// src/app/page.tsx (Versi Tes dengan Data Palsu)
+// src/app/page.tsx (Versi Detektif dengan console.log)
 
+import { db } from '@/lib/firebase';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import PortfolioClientView from '@/components/PortfolioClientView';
 import type { Profile, Skill, Project } from '@/lib/types';
 
-// Ini adalah Halaman Server, tapi kita tidak mengambil data (tidak async)
-export default function HomePage() {
-  
-  // 1. Kita buat data palsu di sini
-  const fakeProfile: Profile = {
-    name: "Bagas (Nama Tes)",
-    title: "Web Developer & Debugger Handal",
-    bio: "Ini adalah bio yang ditampilkan dari data palsu untuk mengetes deployment.",
-    cvUrl: "#",
-  };
+export default async function HomePage() {
+  console.log("Memulai proses render HomePage di server...");
 
-  const fakeSkills: Skill[] = [
-    { id: '1', name: 'Next.js', logoUrl: 'https://cdn.worldvectorlogo.com/logos/next-js.svg' },
-    { id: '2', name: 'Firebase', logoUrl: 'https://cdn.worldvectorlogo.com/logos/firebase-1.svg' },
-    { id: '3', name: 'Vercel', logoUrl: 'https://static-00.iconduck.com/assets.00/vercel-icon-512x449-3422jidz.png' },
-    { id: '4', name: 'TypeScript', logoUrl: 'https://cdn.worldvectorlogo.com/logos/typescript.svg' },
-  ];
+  try {
+    console.log("Mencoba mengambil data profile...");
+    const profileDoc = await getDoc(doc(db, 'profile', 'main'));
+    const profile = (profileDoc.data() || {}) as Profile;
+    console.log("✅ BERHASIL mengambil data profile.");
 
-  const fakeProjects: Project[] = [
-    {
-      id: 'p1',
-      title: 'Proyek Tes 1',
-      description: 'Deskripsi untuk proyek tes ini untuk memastikan komponen bisa dirender dengan benar.',
-      imageUrl: 'https://via.placeholder.com/600x360.png/1a202c/FFFFFF?text=Project+Image',
-      projectUrl: '#',
-    },
-  ];
+    console.log("Mencoba mengambil data skills...");
+    const skillsSnapshot = await getDocs(collection(db, 'skills'));
+    const skills = skillsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Skill[];
+    console.log("✅ BERHASIL mengambil data skills. Jumlah:", skills.length);
 
-  // 2. Lemparkan data palsu ke Client Component
-  return (
-    <PortfolioClientView 
-      profile={fakeProfile}
-      skills={fakeSkills}
-      projects={fakeProjects}
-    />
-  );
+    console.log("Mencoba mengambil data projects...");
+    const projectsSnapshot = await getDocs(collection(db, 'projects'));
+    const projects = projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Project[];
+    console.log("✅ BERHASIL mengambil data projects. Jumlah:", projects.length);
+
+    console.log("Semua data berhasil diambil. Melempar ke Client Component...");
+
+    return (
+      <PortfolioClientView 
+        profile={profile}
+        skills={skills}
+        projects={projects}
+      />
+    );
+
+  } catch (error) {
+    console.error("❌ TERJADI ERROR FATAL SAAT PENGAMBILAN DATA:", error);
+    // Tampilkan pesan error jika build gagal mengambil data
+    return <div>Terjadi kesalahan saat memuat data portofolio. Silakan coba lagi nanti.</div>;
+  }
 }
