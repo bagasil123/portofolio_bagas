@@ -4,7 +4,6 @@ import React from 'react';
 import type { Profile, Skill, Project } from '@/lib/types';
 import { motion, Variants } from 'framer-motion';
 
-// Import all the components we just created
 import { Scene3D } from '@/components/3d/Scene3D';
 import { ProjectCard3D } from '@/components/3d/ProjectCard3D';
 import { SkillCard3D } from '@/components/3d/SkillCard3D';
@@ -16,7 +15,6 @@ interface PortfolioViewProps {
   projects: Project[];
 }
 
-// Animation variants for elements fading in on scroll
 const fadeInAnimationVariants: Variants = {
   initial: { opacity: 0, y: 100 },
   animate: (index: number) => ({
@@ -61,9 +59,20 @@ const Skills = ({ skills }: { skills: Skill[] }) => (
     >Teknologi & Tools</motion.h2>
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 max-w-6xl mx-auto px-4">
       {skills.map((skill, index) => (
-        <motion.div
-          key={skill.id} variants={fadeInAnimationVariants} initial="initial" whileInView="animate" viewport={{ once: true }} custom={index}
-        ><SkillCard3D skill={skill} /></motion.div>
+        // --- PERBAIKAN UTAMA: Tambahkan pengecekan data ---
+        // Ini memastikan kita hanya merender kartu jika skill.logoUrl ada isinya.
+        skill.logoUrl && (
+          <motion.div
+            key={skill.id}
+            variants={fadeInAnimationVariants}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            custom={index}
+          >
+            <SkillCard3D skill={skill} />
+          </motion.div>
+        )
       ))}
     </div>
   </section>
@@ -77,9 +86,20 @@ const Projects = ({ projects }: { projects: Project[] }) => (
     >Proyek Unggulan</motion.h2>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto px-4">
       {projects.map((project, index) => (
-        <motion.div
-          key={project.id} variants={fadeInAnimationVariants} initial="initial" whileInView="animate" viewport={{ once: true }} custom={index}
-        ><ProjectCard3D project={project} /></motion.div>
+        // --- PERBAIKAN UTAMA: Tambahkan pengecekan data ---
+        // Ini memastikan kita hanya merender kartu jika project.imageUrl ada isinya.
+        project.imageUrl && (
+          <motion.div
+            key={project.id}
+            variants={fadeInAnimationVariants}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            custom={index}
+          >
+            <ProjectCard3D project={project} />
+          </motion.div>
+        )
       ))}
     </div>
   </section>

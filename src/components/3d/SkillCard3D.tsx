@@ -8,8 +8,15 @@ import type { Skill } from '@/lib/types';
 
 /**
  * Renders a 3D card for a skill, featuring a floating logo.
+ * Now includes a check to prevent rendering if the logo URL is missing.
  */
 export const SkillCard3D = ({ skill }: { skill: Skill }) => {
+  // --- PERBAIKAN UTAMA: Pengecekan data di dalam komponen ---
+  // Jika tidak ada logoUrl, jangan render apapun untuk mencegah error.
+  if (!skill || !skill.logoUrl) {
+    return null;
+  }
+
   return (
     <div 
         className="w-full h-32 md:h-40 bg-gray-800/50 rounded-xl backdrop-blur-md border border-gray-700 transition-all duration-300 hover:bg-gray-700/70 hover:border-orange-500 relative" 
