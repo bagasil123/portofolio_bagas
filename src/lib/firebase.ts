@@ -22,17 +22,9 @@ const firebaseConfig = {
   appId: firebaseAppId,
 };
 
-let app: FirebaseApp;
-let auth: Auth;
-let db: Firestore;
+const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-if (getApps().length === 0) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0];
-}
-
-auth = getAuth(app);
-db = getFirestore(app);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 export { db, auth, app };
