@@ -1,46 +1,49 @@
-// src/components/3d/Scene3D.tsx
 "use client";
 
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Points, PointMaterial } from '@react-three/drei';
+import { Points, PointMaterial, Stars } from '@react-three/drei';
 import * as random from 'maath/random';
 import * as THREE from 'three';
 
-export default function Scene3D() {
-  return (
-    <div className="absolute top-0 left-0 w-full h-full -z-10">
-      <Canvas camera={{ position: [0, 0, 5] }}>
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} intensity={1} />
-        <Starfield />
-      </Canvas>
-    </div>
-  );
-}
-
-function Starfield() {
+// Starfield component for the inner, more colorful stars
+const Starfield = (props: any) => {
   const ref = useRef<THREE.Points>(null!);
-  const [sphere] = useState(() => random.inSphere(new Float32Array(10000), { radius: 2 }) as Float32Array);
-
+  const [sphere] = useState(() => random.inSphere(new Float32Array(5000), { radius: 1.5 }) as Float32Array);
+  
   useFrame((state, delta) => {
     if (ref.current) {
-      ref.current.rotation.x += delta / 20;
-      ref.current.rotation.y += delta / 25;
+      ref.current.rotation.x -= delta / 10;
+      ref.current.rotation.y -= delta / 15;
     }
   });
 
   return (
     <group rotation={[0, 0, Math.PI / 4]}>
-      <Points ref={ref} positions={sphere} frustumCulled>
+      <Points ref={ref} positions={sphere} stride={3} frustumCulled {...props}>
         <PointMaterial
           transparent
-          color="#ffffff"
-          size={0.01}
+          color="#f272c8"
+          size={0.005}
           sizeAttenuation={true}
           depthWrite={false}
         />
       </Points>
     </group>
+  );
+}
+
+/**
+ * Renders the main 3D background scene with multiple star layers for a parallax effect.
+ */
+export const Scene3D = () => {
+  return (
+    <div className="fixed top-0 left-0 w-full h-full -z-10 bg-neutral-900">
+      <Canvas camera={{ position: [0, 0, 1] }}>
+        <ambientLight intensity={0.2} />
+        <Starfield />
+        <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+      </Canvas>
+    </div>
   );
 }
