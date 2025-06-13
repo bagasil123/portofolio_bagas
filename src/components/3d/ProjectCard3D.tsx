@@ -4,7 +4,7 @@ import React, { useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Image, Text, RoundedBox } from '@react-three/drei';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
-
+import * as THREE from 'three'; 
 // --- PERBAIKAN IMPORT ---
 // Hooks diimpor dari 'framer-motion', motion component dari 'framer-motion-3d'
 import { useMotionValue, useSpring } from 'framer-motion'; 
