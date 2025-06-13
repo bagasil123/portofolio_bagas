@@ -24,8 +24,7 @@ function Starfield({...props}: ComponentProps<typeof Points>) {
   const ref = useRef<THREE.Points>(null!);
   
   // Generate sphere positions
-  const [sphere] = useState(() => random.inSphere(new Float32Array(5001), { radius: 1.5 }));
-
+  const [sphere] = useState(() => random.inSphere(new Float32Array(5001), { radius: 1.5 }) as Float32Array);
   useFrame((state, delta) => {
     if (ref.current) {
       ref.current.rotation.x -= delta / 10;
